@@ -1,17 +1,12 @@
-
 const express = require('express');
+const path = require('path');
 const router = express.Router();
 
-const wordData = {
-    "date": "2025-07-06",
-    "word": "ephemeral",
-    "definition": "lasting for a very short time",
-    "example": "Life is as ephemeral as morning dew.",
-    "audioUrl": "/audio/ephemeral.mp3"
-};
+const words = require(path.join(__dirname, '..', 'words.json'));
 
 router.get('/', (req, res) => {
-    res.json(wordData);
+  const word = words[Math.floor(Math.random() * words.length)];
+  res.json(word);
 });
 
 module.exports = router;

@@ -1,4 +1,5 @@
-
 # WordWise
 
-A simple one-word-a-day vocabulary app built with Node.js and Express.
+A minimal, elegant word-of-the-day app. Each visit reveals a new word with its definition, phonetic pronunciation, and example usage — big and clear on a clean white canvas.
+
+Built with Node.js and Express.
