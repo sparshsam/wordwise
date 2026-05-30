@@ -25,7 +25,6 @@
 
     html, body {
       height: 100%;
-      /* Dynamic viewport height for iOS Safari notch + toolbar */
       height: 100vh;
       height: 100dvh;
     }
@@ -43,6 +42,115 @@
       width: 100%;
     }
 
+    /* ─── TIMEZONE BAR ─── */
+    .tz-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 4px 8px;
+      pointer-events: none;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .tz-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2px 6px;
+      min-width: 0;
+      flex: 1 0 auto;
+    }
+
+    .tz-abbr {
+      font-size: 0.55rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.45);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+    }
+
+    .tz-time {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }
+
+    .tz-date-desk {
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.35);
+      margin-left: auto;
+      padding: 0 8px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+    }
+
+    /* ─── MOBILE CLOCK ─── */
+    .mobile-clock {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .mobile-clock.top-right {
+      top: max(0.5rem, env(safe-area-inset-top, 0.5rem));
+      right: max(0.75rem, env(safe-area-inset-right, 0.75rem));
+      text-align: right;
+    }
+
+    .mobile-clock.top-left {
+      top: max(0.5rem, env(safe-area-inset-top, 0.5rem));
+      left: max(0.75rem, env(safe-area-inset-left, 0.75rem));
+      text-align: left;
+    }
+
+    .mc-date {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.4);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.3;
+    }
+
+    .mc-tz-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 2px;
+    }
+
+    .mc-tz {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mc-abbr {
+      font-size: 0.5rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+    }
+
+    .mc-time {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.7);
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }
+
+    /* ─── WORD AREA ─── */
     .bg-video {
       position: fixed;
       inset: 0;
@@ -51,8 +159,8 @@
       object-fit: cover;
       z-index: 0;
       transition: opacity 0.8s ease;
-      /* Prevent iOS Safari from treating video as interactive */
       pointer-events: none;
+      background: #111;
     }
 
     .bg-image {
@@ -80,7 +188,6 @@
       position: relative;
       z-index: 2;
       padding: 1rem;
-      /* Safe area padding for notch phones */
       padding-top: max(1rem, env(safe-area-inset-top));
       padding-bottom: max(3rem, env(safe-area-inset-bottom));
     }
@@ -93,7 +200,6 @@
       margin-bottom: 0.2em;
       color: #fff;
       text-shadow: 0 2px 30px rgba(0,0,0,0.4);
-      /* Prevent iOS Safari from auto-adjusting */
       -webkit-text-size-adjust: none;
       word-break: break-word;
       overflow-wrap: break-word;
@@ -137,7 +243,6 @@
       backdrop-filter: blur(4px);
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
-      /* Remove default button styling on iOS */
       -webkit-appearance: none;
       appearance: none;
       outline: none;
@@ -149,7 +254,6 @@
       transform: scale(0.95);
     }
 
-    /* Hover only on devices that support it */
     @media (hover: hover) {
       .play-btn:hover {
         background: rgba(255,255,255,0.2);
@@ -198,25 +302,37 @@
       font-size: clamp(0.9rem, 3vw, 1rem);
     }
 
-    /* Prevent pull-to-refresh on mobile */
     body {
       overscroll-behavior: none;
     }
 
-    /* Reduce motion preference */
     @media (prefers-reduced-motion: reduce) {
-      .bg-video {
-        transition: none;
-      }
+      .bg-video { transition: none; }
     }
 
-    /* Dark background for video poster while loading */
-    .bg-video {
-      background: #111;
+    /* ─── RESPONSIVE ─── */
+    @media (min-width: 768px) {
+      /* Desktop: show timezone bar, hide mobile clock */
+      .tz-bar { display: flex; }
+      .mobile-clock { display: none !important; }
+      /* Push word-box down a bit to clear the bar */
+      #word-box { padding-top: max(2.5rem, env(safe-area-inset-top)); }
+    }
+
+    @media (max-width: 767px) {
+      /* Mobile: hide desktop bar, show mobile clock */
+      .tz-bar { display: none !important; }
+      .mobile-clock { display: block; }
     }
   </style>
 </head>
 <body>
+  <!-- Desktop timezone bar -->
+  <div class="tz-bar" id="tz-bar"></div>
+
+  <!-- Mobile clock -->
+  <div class="mobile-clock top-right" id="mobile-clock"></div>
+
   <div id="bg-container"></div>
   <div class="overlay"></div>
   <div id="word-box">
@@ -226,85 +342,222 @@
   <div class="credit" id="credit"></div>
 
   <script>
+    // ─── TIMEZONE DATA ───
+    var TZ_LIST = [
+      { abbr: 'PT',  zone: 'America/Los_Angeles',  label: 'Los Angeles' },
+      { abbr: 'MT',  zone: 'America/Denver',        label: 'Denver' },
+      { abbr: 'CT',  zone: 'America/Chicago',       label: 'Chicago' },
+      { abbr: 'ET',  zone: 'America/New_York',      label: 'New York' },
+      { abbr: 'BRT', zone: 'America/Sao_Paulo',     label: 'São Paulo' },
+      { abbr: 'GMT', zone: 'Europe/London',          label: 'London' },
+      { abbr: 'CET', zone: 'Europe/Berlin',          label: 'Berlin' },
+      { abbr: 'GST', zone: 'Asia/Dubai',             label: 'Dubai' },
+      { abbr: 'PKT', zone: 'Asia/Karachi',           label: 'Karachi' },
+      { abbr: 'IST', zone: 'Asia/Kolkata',           label: 'Mumbai' },
+      { abbr: 'CST', zone: 'Asia/Shanghai',          label: 'Beijing' },
+      { abbr: 'JST', zone: 'Asia/Tokyo',             label: 'Tokyo' },
+    ];
+
+    // Map IANA zones → abbreviations for opposite lookup
+    var TZ_ABBR_MAP = {};
+    TZ_LIST.forEach(function(t) { TZ_ABBR_MAP[t.zone] = t.abbr; });
+
+    // Opposite pairs
+    var OPPOSITES = {
+      'America/New_York':   'Asia/Kolkata',   // IST ~10.5h ahead
+      'America/Chicago':    'Asia/Karachi',   // PKT ~11h ahead
+      'America/Denver':     'Asia/Dubai',     // GST ~11h ahead
+      'America/Los_Angeles':'Asia/Tokyo',     // JST ~17h
+      'America/Sao_Paulo':  'Asia/Shanghai',
+      'Europe/London':      'Asia/Tokyo',     // ~8h
+      'Europe/Berlin':      'Asia/Kolkata',   // ~4.5h
+      'Asia/Dubai':         'America/Denver',
+      'Asia/Karachi':       'America/Chicago',
+      'Asia/Kolkata':       'America/New_York',
+      'Asia/Shanghai':      'America/Sao_Paulo',
+      'Asia/Tokyo':         'America/Los_Angeles',
+    };
+
+    var OPPOSITE_KEYS = Object.keys(OPPOSITES);
+
+    function getUserZone() {
+      try { return Intl.DateTimeFormat().resolvedOptions().timeZone; }
+      catch(e) { return 'America/New_York'; }
+    }
+
+    function formatTime(zone) {
+      var now = new Date();
+      return now.toLocaleTimeString('en-US', {
+        timeZone: zone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+    }
+
+    function formatDateLong() {
+      return new Date().toLocaleDateString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+      });
+    }
+
+    function formatDateShort() {
+      return new Date().toLocaleDateString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric'
+      });
+    }
+
+    function getOppositeZone(userZone) {
+      // Direct opposite
+      if (OPPOSITES[userZone]) return OPPOSITES[userZone];
+      // Reverse lookup
+      for (var i = 0; i < OPPOSITE_KEYS.length; i++) {
+        if (OPPOSITES[OPPOSITE_KEYS[i]] === userZone) return OPPOSITE_KEYS[i];
+      }
+      // Random pick
+      var others = OPPOSITE_KEYS.filter(function(k) { return k !== userZone && OPPOSITES[k] !== userZone; });
+      if (others.length === 0) return 'Asia/Kolkata';
+      return others[Math.floor(Math.random() * others.length)];
+    }
+
+    // Get two opposite zones for mobile
+    function getMobileOpposites(userZone) {
+      var opp = getOppositeZone(userZone);
+      var second = getOppositeZone(opp);
+      // Avoid showing same zone or user zone
+      if (second === userZone || second === opp) {
+        var fallbacks = ['Asia/Kolkata', 'America/New_York', 'Europe/London', 'Asia/Tokyo'];
+        for (var i = 0; i < fallbacks.length; i++) {
+          if (fallbacks[i] !== userZone && fallbacks[i] !== opp) {
+            second = fallbacks[i];
+            break;
+          }
+        }
+      }
+      return [
+        { zone: opp,    abbr: TZ_ABBR_MAP[opp] || opp.split('/').pop() },
+        { zone: second, abbr: TZ_ABBR_MAP[second] || second.split('/').pop() },
+      ];
+    }
+
+    function renderDesktopBar() {
+      var bar = document.getElementById('tz-bar');
+      var html = '';
+      TZ_LIST.forEach(function(t) {
+        html += '<div class="tz-item">' +
+          '<span class="tz-abbr">' + t.abbr + '</span>' +
+          '<span class="tz-time" data-zone="' + t.zone + '">' + formatTime(t.zone) + '</span>' +
+          '</div>';
+      });
+      html += '<div class="tz-date-desk">' + formatDateLong() + '</div>';
+      bar.innerHTML = html;
+
+      // Update every 30s
+      setInterval(function() {
+        var els = bar.querySelectorAll('.tz-time');
+        els.forEach(function(el) {
+          el.textContent = formatTime(el.getAttribute('data-zone'));
+        });
+        var dateEl = bar.querySelector('.tz-date-desk');
+        if (dateEl) dateEl.textContent = formatDateLong();
+      }, 30000);
+    }
+
+    function renderMobileClock(userZone) {
+      var zones = getMobileOpposites(userZone);
+      var html = '<div class="mc-date">' + formatDateShort() + '</div><div class="mc-tz-row">';
+      zones.forEach(function(z) {
+        html += '<div class="mc-tz">' +
+          '<span class="mc-time" data-zone="' + z.zone + '">' + formatTime(z.zone) + '</span>' +
+          '<span class="mc-abbr">' + z.abbr + '</span>' +
+          '</div>';
+      });
+      html += '</div>';
+
+      var el = document.getElementById('mobile-clock');
+      el.innerHTML = html;
+
+      setInterval(function() {
+        var els = el.querySelectorAll('.mc-time');
+        els.forEach(function(e) {
+          e.textContent = formatTime(e.getAttribute('data-zone'));
+        });
+        var dateEl = el.querySelector('.mc-date');
+        if (dateEl) dateEl.textContent = formatDateShort();
+      }, 30000);
+    }
+
+    function renderDateCorner() {
+      // Date already shown in tz-bar (desktop) and mobile-clock (mobile)
+      // Nothing extra needed
+    }
+
+    // ─── WORD FETCH ───
     async function fetchWord() {
       try {
-        const res = await fetch('/api/word');
-        const data = await res.json();
+        var res = await fetch('/api/word');
+        var data = await res.json();
         renderWord(data);
-      } catch {
+      } catch(e) {
         document.getElementById('word-box').innerHTML = '<div class="word" style="font-size:2rem">—</div>';
       }
     }
 
     function renderWord(data) {
-      const container = document.getElementById('bg-container');
+      var container = document.getElementById('bg-container');
 
       if (data.backgroundType === 'video' && data.background) {
-        container.innerHTML = `
-          <video class="bg-video" autoplay muted loop playsinline preload="metadata"
-            poster="${data.background.replace(/\.mp4.*/, '')}/thumb.jpg"
-            aria-hidden="true">
-            <source src="${data.background}" type="video/mp4">
-          </video>`;
+        container.innerHTML = '<video class="bg-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">' +
+          '<source src="' + data.background + '" type="video/mp4"></video>';
       } else if (data.background) {
-        container.innerHTML = `
-          <div class="bg-image" style="background-image: url(${data.background})" role="img" aria-hidden="true"></div>`;
+        container.innerHTML = '<div class="bg-image" style="background-image: url(' + data.background + ')" role="img" aria-hidden="true"></div>';
       } else {
         container.innerHTML = '';
       }
 
-      // Photographer credit
-      const creditEl = document.getElementById('credit');
+      var creditEl = document.getElementById('credit');
       if (data.photographer && data.photoUrl) {
-        const mediaType = data.backgroundType === 'video' ? 'Video' : 'Photo';
-        creditEl.innerHTML = mediaType + ` by <a href="${data.photoUrl}" target="_blank" rel="noopener">${data.photographer}</a> on <a href="https://pexels.com" target="_blank">Pexels</a>`;
+        var mediaType = data.backgroundType === 'video' ? 'Video' : 'Photo';
+        creditEl.innerHTML = mediaType + ' by <a href="' + data.photoUrl + '" target="_blank" rel="noopener">' + escapeHtml(data.photographer) + '</a> on <a href="https://pexels.com" target="_blank">Pexels</a>';
       } else {
         creditEl.innerHTML = '';
       }
 
-      // Audio pronunciation button
-      const audioHtml = data.audioUrl
-        ? `<button class="play-btn" id="play-btn" aria-label="Play pronunciation">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/>
-            </svg>
-          </button>`
+      var audioHtml = data.audioUrl
+        ? '<button class="play-btn" id="play-btn" aria-label="Play pronunciation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></svg></button>'
         : '';
 
-      const box = document.getElementById('word-box');
-      box.innerHTML = `
-        <div class="word">${escapeHtml(data.word)}</div>
-        ${data.phonetic ? `<div class="phonetic">${escapeHtml(data.phonetic)}</div>` : ''}
-        <div class="definition">${escapeHtml(data.definition)}</div>
-        ${audioHtml}
-      `;
+      var box = document.getElementById('word-box');
+      box.innerHTML =
+        '<div class="word">' + escapeHtml(data.word) + '</div>' +
+        (data.phonetic ? '<div class="phonetic">' + escapeHtml(data.phonetic) + '</div>' : '') +
+        '<div class="definition">' + escapeHtml(data.definition) + '</div>' +
+        audioHtml;
 
-      // Attach audio event listener after DOM update
       if (data.audioUrl) {
-        const btn = document.getElementById('play-btn');
+        var btn = document.getElementById('play-btn');
         if (btn) {
-          btn.addEventListener('click', function playHandler() {
-            playAudio(data.audioUrl);
-          });
+          btn.addEventListener('click', function() { playAudio(data.audioUrl); });
         }
       }
     }
 
     function playAudio(url) {
-      const audio = new Audio(url);
-      audio.play().catch(function() {
-        // Autoplay blocked — user needs to interact first
-      });
+      var audio = new Audio(url);
+      audio.play().catch(function() {});
     }
 
-    // Simple escape to prevent XSS from dictionary content
     function escapeHtml(text) {
       if (!text) return '';
-      var div = document.createElement('div');
-      div.appendChild(document.createTextNode(text));
-      return div.innerHTML;
+      var d = document.createElement('div');
+      d.appendChild(document.createTextNode(text));
+      return d.innerHTML;
     }
 
+    // ─── INIT ───
+    var userZone = getUserZone();
+    renderDesktopBar();
+    renderMobileClock(userZone);
     fetchWord();
   </script>
 </body>
