@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="WordWise" src="assets/screenshot-main.svg" width="720">
+  <img alt="WordWise" src="assets/screenshot-main.png" width="720">
 </p>
 
 <h1 align="center">WordWise</h1>
