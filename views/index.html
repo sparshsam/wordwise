@@ -496,21 +496,21 @@
 
     function getDateFact() {
       var now = new Date();
-      var key = (now.getMonth() + 1) + \'-\' + now.getDate();
+      var key = (now.getMonth() + 1) + '-' + now.getDate();
       var facts = DATE_FACTS[key];
       if (facts && facts.length) {
         return facts[Math.floor(Math.random() * facts.length)];
       }
       // Fallback for dates without specific facts
       var generic = [
-        \'On this day in 1969, the first message was sent over ARPANET — the precursor to the internet.\',
-        \'On this day in 1928, Alexander Fleming discovered penicillin completely by accident.\',
-        \'On this day in 1865, Lewis Carroll published Alice\'s Adventures in Wonderland.\',
-        \'On this day in 1938, the first time a live sports event was broadcast on TV — a football match.\',
-        \'On this day in 1947, Chuck Yeager broke the sound barrier for the first time in the Bell X-1.\',
-        \'On this day in 1953, Francis Crick and James Watson discovered the structure of DNA.\',
-        \'On this day in 1977, the first home computer — the Apple II — went on sale.\',
-        \'On this day in 1985, the first .com domain name was registered: symbolics.com.\',
+        'On this day in 1969, the first message was sent over ARPANET — the precursor to the internet.',
+        'On this day in 1928, Alexander Fleming discovered penicillin completely by accident.',
+        'On this day in 1865, Lewis Carroll published Alice\'s Adventures in Wonderland.',
+        'On this day in 1938, the first time a live sports event was broadcast on TV — a football match.',
+        'On this day in 1947, Chuck Yeager broke the sound barrier for the first time in the Bell X-1.',
+        'On this day in 1953, Francis Crick and James Watson discovered the structure of DNA.',
+        'On this day in 1977, the first home computer — the Apple II — went on sale.',
+        'On this day in 1985, the first .com domain name was registered: symbolics.com.',
       ];
       return generic[Math.floor(Math.random() * generic.length)];
     }
