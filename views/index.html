@@ -535,13 +535,36 @@
     }
 
     // ─── WORD FETCH ───
+    // Show a curated word as instant fallback if API is slow
+    var CURATED_FALLBACK = [
+      { word: 'serendipity', phonetic: '/ˌsɛrənˈdɪpɪti/', definition: 'the occurrence of events by chance in a happy way' },
+      { word: 'ephemeral', phonetic: '/ɪˈfɛm(ə)rəl/', definition: 'lasting for a very short time' },
+      { word: 'halcyon', phonetic: '/ˈhælsiən/', definition: 'denoting a period of time that is happy and peaceful' },
+      { word: 'petrichor', phonetic: '/ˈpɛtrɪkɔː/', definition: 'the pleasant smell that accompanies rain on dry ground' },
+      { word: 'luminous', phonetic: '/ˈluːmɪnəs/', definition: 'full of or shedding light; bright' },
+    ];
+    var fallbackTimer = setTimeout(function() {
+      // If API hasn't responded yet, show a fallback word immediately
+      var fb = CURATED_FALLBACK[Math.floor(Math.random() * CURATED_FALLBACK.length)];
+      renderWord(fb);
+    }, 4000);
+
     async function fetchWord() {
       try {
-        var res = await fetch('/api/word');
+        var ctrl = new AbortController();
+        var timeout = setTimeout(function() { ctrl.abort(); }, 8000);
+        var res = await fetch('/api/word', { signal: ctrl.signal });
+        clearTimeout(timeout);
         var data = await res.json();
+        clearTimeout(fallbackTimer);
         renderWord(data);
       } catch(e) {
-        document.getElementById('word-box').innerHTML = '<div class="word" style="font-size:2rem">—</div>';
+        clearTimeout(fallbackTimer);
+        // If nothing rendered yet, show dash
+        var box = document.getElementById('word-box');
+        if (box && box.querySelector('.loading')) {
+          box.innerHTML = '<div class="word" style="font-size:2rem">—</div>';
+        }
       }
     }
 
