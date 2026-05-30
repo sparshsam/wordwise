@@ -24,7 +24,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white" alt="Node >=18">
-  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License">
+  <img src="https://img.shields.io/badge/license-AGPL--3.0-blue.svg" alt="AGPL-3.0">
   <img src="https://img.shields.io/github/last-commit/sparshsam/wordwise" alt="Last commit">
   <img src="https://img.shields.io/badge/status-active-brightgreen" alt="Status">
 </p>
@@ -193,4 +193,4 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 ## License
 
-MIT. See [LICENSE](LICENSE) for details.
+AGPL-3.0. See [LICENSE](LICENSE) for details.
