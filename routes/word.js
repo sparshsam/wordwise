@@ -5,7 +5,7 @@ const router = express.Router();
 
 const curatedWords = require(path.join(__dirname, '..', 'words.json'));
 const DICT_API = 'https://api.dictionaryapi.dev/api/v2/entries/en';
-const PEXELS_API = 'https://api.pexels.com/v1/curated';
+const PEXELS_VIDEO_API = 'https://api.pexels.com/videos/popular';
 const PEXELS_KEY = process.env.PEXELS_API_KEY || 'leDFMC0LbjxAG5mARI5f2X327gcFlgqYYBa6SgyncufkloumrVAZCYFD';
 
 // Load large word list
@@ -46,22 +46,32 @@ async function fetchFromDictionary(word) {
   return { word, phonetic, definition, example, partOfSpeech, audioUrl };
 }
 
-async function fetchBackground() {
+async function fetchBackgroundVideo() {
   try {
-    const page = Math.floor(Math.random() * 50) + 1;
-    const url = `${PEXELS_API}?per_page=1&page=${page}`;
+    const page = Math.floor(Math.random() * 30) + 1;
+    const url = `${PEXELS_VIDEO_API}?per_page=1&page=${page}&min_width=1920&min_height=1080`;
     const res = await fetch(url, {
       headers: { Authorization: PEXELS_KEY },
     });
     if (!res.ok) return null;
     const data = await res.json();
-    const photos = data.photos || [];
-    if (photos.length === 0) return null;
-    const photo = photos[0];
+    const videos = data.videos || [];
+    if (videos.length === 0) return null;
+    const video = videos[0];
+
+    // Pick the highest quality video file (prefer 4k or 2k, fall back to hd)
+    const files = video.video_files || [];
+    // Sort by quality: higher height = better
+    files.sort((a, b) => (b.height || 0) - (a.height || 0));
+    const best = files[0];
+    if (!best || !best.link) return null;
+
     return {
-      src: photo.src?.original || photo.src?.large2x || null,
-      photographer: photo.photographer || null,
-      url: photo.url || null,
+      src: best.link,
+      photographer: video.user?.name || null,
+      url: video.url || null,
+      width: best.width,
+      height: best.height,
     };
   } catch {
     return null;
@@ -95,10 +105,11 @@ router.get('/', async (req, res) => {
   // Fallback
   if (!result) result = pickRandomCurated();
 
-  // Attach background image from Pexels
-  const bg = await fetchBackground();
+  // Attach background video from Pexels
+  const bg = await fetchBackgroundVideo();
   if (bg) {
     result.background = bg.src;
+    result.backgroundType = 'video';
     result.photographer = bg.photographer;
     result.photoUrl = bg.url;
   }
