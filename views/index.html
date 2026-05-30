@@ -135,6 +135,21 @@
       white-space: nowrap;
       font-variant-numeric: tabular-nums;
       flex-shrink: 0;
+      position: relative;
+      cursor: default;
+      pointer-events: auto;
+    }
+
+    .tz-date-desk .tz-tooltip {
+      left: auto;
+      right: 0;
+      transform: translateY(4px);
+      max-width: 380px;
+    }
+
+    .tz-date-desk:hover .tz-tooltip {
+      opacity: 1;
+      transform: translateY(6px);
     }
 
     /* ─── MOBILE CLOCK ─── */
@@ -390,12 +405,12 @@
       { abbr: 'MT',  zone: 'America/Denver',        label: 'Denver, Colorado, USA',       fact: 'Denver is the only U.S. city to have hosted the Olympics at a mile above sea level.' },
       { abbr: 'CT',  zone: 'America/Chicago',       label: 'Chicago, Illinois, USA',     fact: 'Chicago invented the skyscraper and the brownie — both changed the world.' },
       { abbr: 'ET',  zone: 'America/New_York',      label: 'New York, New York, USA',    fact: 'The New York Stock Exchange opens at 9:30 AM ET — the busiest trading hour on Earth.' },
-      { abbr: 'BRT', zone: 'America/Sao_Paulo',     label: 'São Paulo, Brazil',   fact: 'São Paulo is the largest city in the Americas outside North America — 22 million people.' },
+      { abbr: 'BRT', zone: 'America/Sao_Paulo',     label: 'São Paulo, SP, Brazil',   fact: 'São Paulo is the largest city in the Americas outside North America — 22 million people.' },
       { abbr: 'GMT', zone: 'Europe/London',          label: 'London, England, UK',      fact: 'GMT is the world\'s timekeeping zero — all other timezones are measured against it.' },
       { abbr: 'CET', zone: 'Europe/Berlin',          label: 'Berlin, Germany',      fact: 'Berlin spans two timezone offsets yearly — its DST transition affects most of Europe.' },
       { abbr: 'GST', zone: 'Asia/Dubai',             label: 'Dubai, UAE',       fact: 'Dubai runs on UTC+4 year-round — no daylight saving means sunrise times barely shift.' },
-      { abbr: 'PKT', zone: 'Asia/Karachi',           label: 'Karachi, Pakistan',     fact: 'Pakistan is one of the few countries that uses a 30-minute offset (UTC+5:30).' },
-      { abbr: 'IST', zone: 'Asia/Kolkata',           label: 'Mumbai, India',      fact: 'India uses a single timezone for 1.4 billion people — sunrise varies by 2 hours east to west.' },
+      { abbr: 'PKT', zone: 'Asia/Karachi',           label: 'Karachi, Sindh, Pakistan',     fact: 'Pakistan is one of the few countries that uses a 30-minute offset (UTC+5:30).' },
+      { abbr: 'IST', zone: 'Asia/Kolkata',           label: 'Mumbai, Maharashtra, India',      fact: 'India uses a single timezone for 1.4 billion people — sunrise varies by 2 hours east to west.' },
       { abbr: 'CST', zone: 'Asia/Shanghai',          label: 'Beijing, China',     fact: 'China spans five geographic timezones but uses just one — Beijing time across the whole country.' },
       { abbr: 'JST', zone: 'Asia/Tokyo',             label: 'Tokyo, Japan',       fact: 'Japan\'s timezone hasn\'t changed since 1888 — one of the oldest continuous standards.' },
     ];
@@ -449,6 +464,57 @@
       });
     }
 
+    // Weird historical facts keyed by month-day
+    var DATE_FACTS = {
+      '1-1': ['In 1804, Haiti became the first independent nation in Latin America and the first post-colonial black-led nation.', 'In 1919, Edsel Ford succeeded his father Henry as president of Ford Motor Company.'],
+      '1-15': ['In 1967, the first Super Bowl was played — the Green Bay Packers beat the Kansas City Chiefs 35–10.', 'In 2009, US Airways Flight 1549 landed in the Hudson River after both engines failed. All 155 survived.'],
+      '2-2': ['In 1887, Punxsutawney Phil saw his shadow for the first recorded Groundhog Day.', 'In 1848, the Treaty of Guadalupe Hidalgo ended the Mexican-American War.'],
+      '2-14': ['In 1929, the St. Valentine\'s Day Massacre happened in Chicago — seven gangsters were killed.', 'In 1876, Alexander Graham Bell filed a patent for the telephone.'],
+      '3-14': ['Albert Einstein was born on this day in 1879. Also happens to be Pi Day (3.14).', 'In 1951, the UN headquarters officially opened in New York.'],
+      '3-17': ['St. Patrick\'s Day — Patrick wasn\'t actually Irish, and the color originally associated with him was blue, not green.'],
+      '4-1': ['April Fools\' Day — some historians trace it back to 1582 when France switched to the Gregorian calendar.', 'In 1976, Steve Jobs and Steve Wozniak founded Apple Computer.'],
+      '4-22': ['Earth Day was first celebrated in 1970, inspired by the 1969 Santa Barbara oil spill.', 'In 1500, Portuguese explorer Pedro Álvares Cabral landed on the coast of Brazil.'],
+      '5-4': ['In 1970, four students were killed by the Ohio National Guard at Kent State University during a war protest.', 'May the Fourth be with you — Star Wars Day!'],
+      '5-30': ['In 1431, Joan of Arc was burned at the stake in Rouen, France. She was 19.', 'In 1922, the Lincoln Memorial was dedicated in Washington, D.C.', 'In 1971, the American probe Mariner 9 became the first spacecraft to orbit Mars.'],
+      '5-31': ['In 1859, Big Ben (the clock tower) first started keeping time in London.', 'In 1916, the Battle of Jutland — the largest naval battle of WWI — began.'],
+      '6-6': ['D-Day — the Allied invasion of Normandy on June 6, 1944 was the largest amphibious invasion in history.', 'In 1933, the first drive-in movie theater opened in Camden, New Jersey.'],
+      '6-20': ['In 1837, Queen Victoria ascended to the British throne at age 18.', 'In 1975, the movie Jaws premiered — it basically invented the summer blockbuster.'],
+      '7-4': ['US Independence Day — but the Declaration of Independence was actually signed on August 2, not July 4.', 'In 1826, both Thomas Jefferson and John Adams died on the same day — the 50th anniversary of the Declaration.'],
+      '7-20': ['In 1969, Neil Armstrong walked on the Moon. The whole world watched.', 'In 1976, the Viking 1 lander touched down on Mars.'],
+      '8-6': ['In 1945, the first atomic bomb was dropped on Hiroshima, Japan.', 'In 1991, the World Wide Web was opened to the public by Tim Berners-Lee.'],
+      '8-15': ['In 1969, the Woodstock music festival began in upstate New York. Half a million people showed up.', 'India gained independence from Britain on this day in 1947.'],
+      '9-11': ['In 2001, terrorist attacks on the World Trade Center and Pentagon killed nearly 3,000 people.', 'In 1973, Chilean president Salvador Allende died during a military coup.'],
+      '9-21': ['In 1937, J.R.R. Tolkien published The Hobbit.', 'In 1998, Bill Clinton\'s grand jury testimony about Monica Lewinsky was broadcast on TV.'],
+      '10-5': ['In 1962, the first James Bond film (Dr. No) premiered in London.', 'In 1921, the World Series was broadcast on radio for the first time.'],
+      '10-31': ['Halloween — the tradition traces back 2,000 years to the Celtic festival of Samhain.', 'In 1517, Martin Luther nailed his 95 Theses to a church door, sparking the Protestant Reformation.'],
+      '11-5': ['Guy Fawkes Night — in 1605, a plot to blow up the British Parliament was foiled.', 'In 1994, George Foreman knocked out Michael Moorer at age 45 to become the oldest heavyweight champ ever.'],
+      '11-22': ['In 1963, President John F. Kennedy was assassinated in Dallas, Texas.', 'In 1995, Toy Story — the first feature-length computer-animated film — premiered.'],
+      '12-11': ['In 1913, the Mona Lisa was recovered in Florence two years after being stolen from the Louvre.', 'In 1946, UNICEF was founded.'],
+      '12-25': ['Christmas Day — in 336 AD, the first recorded celebration of Christmas on December 25 happened in Rome.', 'In 1914, German and British soldiers spontaneously played soccer in No Man\'s Land during WWI.'],
+      '12-31': ['New Year\'s Eve — in 1907, the first Times Square ball drop happened in New York City.', 'In 1999, the Panama Canal was handed over from the US to Panama.'],
+    };
+
+    function getDateFact() {
+      var now = new Date();
+      var key = (now.getMonth() + 1) + \'-\' + now.getDate();
+      var facts = DATE_FACTS[key];
+      if (facts && facts.length) {
+        return facts[Math.floor(Math.random() * facts.length)];
+      }
+      // Fallback for dates without specific facts
+      var generic = [
+        \'On this day in 1969, the first message was sent over ARPANET — the precursor to the internet.\',
+        \'On this day in 1928, Alexander Fleming discovered penicillin completely by accident.\',
+        \'On this day in 1865, Lewis Carroll published Alice\'s Adventures in Wonderland.\',
+        \'On this day in 1938, the first time a live sports event was broadcast on TV — a football match.\',
+        \'On this day in 1947, Chuck Yeager broke the sound barrier for the first time in the Bell X-1.\',
+        \'On this day in 1953, Francis Crick and James Watson discovered the structure of DNA.\',
+        \'On this day in 1977, the first home computer — the Apple II — went on sale.\',
+        \'On this day in 1985, the first .com domain name was registered: symbolics.com.\',
+      ];
+      return generic[Math.floor(Math.random() * generic.length)];
+    }
+
     function getOppositeZone(userZone) {
       // Direct opposite
       if (OPPOSITES[userZone]) return OPPOSITES[userZone];
@@ -492,7 +558,7 @@
           '<div class="tz-tooltip"><span class="tt-label">' + t.label + '</span><br><span class="tt-fact">' + t.fact + '</span></div>' +
           '</div>';
       });
-      html += '<div class="tz-date-desk">' + formatDateLong() + '</div>';
+      html += '<div class="tz-date-desk">' + formatDateLong() + '<div class="tz-tooltip"><span class="tt-fact">' + getDateFact() + '</span></div></div>';
       bar.innerHTML = html;
 
       // Update every 30s
@@ -502,7 +568,14 @@
           el.textContent = formatTime(el.getAttribute('data-zone'));
         });
         var dateEl = bar.querySelector('.tz-date-desk');
-        if (dateEl) dateEl.textContent = formatDateLong();
+        if (dateEl) {
+          var dateText = formatDateLong();
+          var tooltip = dateEl.querySelector('.tz-tooltip .tt-fact');
+          if (tooltip) tooltip.textContent = getDateFact();
+          // Update date text without wiping tooltip
+          var textNode = dateEl.childNodes[0];
+          if (textNode) textNode.textContent = dateText;
+        }
       }, 30000);
     }
 
