@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate icon" href="/favicon.ico">
 
@@ -23,15 +23,24 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    html, body {
+      height: 100%;
+      /* Dynamic viewport height for iOS Safari notch + toolbar */
+      height: 100vh;
+      height: 100dvh;
+    }
+
     body {
       color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      -webkit-text-size-adjust: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #111;
       overflow: hidden;
+      position: fixed;
+      width: 100%;
     }
 
     .bg-video {
@@ -42,6 +51,8 @@
       object-fit: cover;
       z-index: 0;
       transition: opacity 0.8s ease;
+      /* Prevent iOS Safari from treating video as interactive */
+      pointer-events: none;
     }
 
     .bg-image {
@@ -49,10 +60,10 @@
       inset: 0;
       width: 100%;
       height: 100%;
-      object-fit: cover;
       z-index: 0;
       background-size: cover;
       background-position: center;
+      background-repeat: no-repeat;
     }
 
     .overlay {
@@ -60,6 +71,7 @@
       inset: 0;
       background: rgba(0, 0, 0, 0.35);
       z-index: 1;
+      pointer-events: none;
     }
 
     #word-box {
@@ -67,20 +79,29 @@
       max-width: 90vw;
       position: relative;
       z-index: 2;
+      padding: 1rem;
+      /* Safe area padding for notch phones */
+      padding-top: max(1rem, env(safe-area-inset-top));
+      padding-bottom: max(3rem, env(safe-area-inset-bottom));
     }
 
     .word {
-      font-size: clamp(4rem, 15vw, 12rem);
+      font-size: clamp(3.5rem, 14vw, 10rem);
       font-weight: 700;
       letter-spacing: -0.02em;
-      line-height: 1.1;
-      margin-bottom: 0.25em;
+      line-height: 1.15;
+      margin-bottom: 0.2em;
       color: #fff;
       text-shadow: 0 2px 30px rgba(0,0,0,0.4);
+      /* Prevent iOS Safari from auto-adjusting */
+      -webkit-text-size-adjust: none;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
     }
 
     .phonetic {
-      font-size: 1.1rem;
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
       color: rgba(255,255,255,0.6);
       margin-bottom: 0.5em;
       font-weight: 400;
@@ -88,71 +109,110 @@
     }
 
     .definition {
-      font-size: 1.2rem;
+      font-size: clamp(1rem, 3.5vw, 1.3rem);
       color: rgba(255,255,255,0.8);
       max-width: 500px;
+      width: 85vw;
       margin: 0 auto 1.5em;
       line-height: 1.5;
       text-shadow: 0 1px 8px rgba(0,0,0,0.3);
+      overflow-wrap: break-word;
     }
 
     .play-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      min-height: 44px;
       border: 1px solid rgba(255,255,255,0.3);
       border-radius: 50%;
       background: rgba(255,255,255,0.1);
       cursor: pointer;
       transition: background 0.15s, border-color 0.15s;
       color: #fff;
+      -webkit-backdrop-filter: blur(4px);
       backdrop-filter: blur(4px);
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      /* Remove default button styling on iOS */
+      -webkit-appearance: none;
+      appearance: none;
+      outline: none;
     }
 
-    .play-btn:hover {
-      background: rgba(255,255,255,0.2);
+    .play-btn:active {
+      background: rgba(255,255,255,0.25);
       border-color: rgba(255,255,255,0.5);
+      transform: scale(0.95);
+    }
+
+    /* Hover only on devices that support it */
+    @media (hover: hover) {
+      .play-btn:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: rgba(255,255,255,0.5);
+      }
     }
 
     .play-btn svg {
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
+      display: block;
     }
 
     .footer {
       position: fixed;
-      bottom: 2rem;
+      bottom: max(1.5rem, env(safe-area-inset-bottom, 1rem));
       left: 50%;
       transform: translateX(-50%);
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: rgba(255,255,255,0.3);
       z-index: 2;
+      pointer-events: none;
+      white-space: nowrap;
     }
 
     .credit {
       position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      font-size: 0.7rem;
+      bottom: max(1.5rem, env(safe-area-inset-bottom, 1rem));
+      right: max(1rem, env(safe-area-inset-right, 1rem));
+      font-size: 0.6rem;
       color: rgba(255,255,255,0.25);
       z-index: 2;
       text-align: right;
-      max-width: 200px;
+      max-width: 160px;
+      pointer-events: none;
     }
 
     .credit a {
       color: rgba(255,255,255,0.35);
       text-decoration: none;
-    }
-    .credit a:hover {
-      text-decoration: underline;
+      pointer-events: auto;
     }
 
     .loading {
       color: rgba(255,255,255,0.5);
-      font-size: 1rem;
+      font-size: clamp(0.9rem, 3vw, 1rem);
+    }
+
+    /* Prevent pull-to-refresh on mobile */
+    body {
+      overscroll-behavior: none;
+    }
+
+    /* Reduce motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      .bg-video {
+        transition: none;
+      }
+    }
+
+    /* Dark background for video poster while loading */
+    .bg-video {
+      background: #111;
     }
   </style>
 </head>
@@ -181,12 +241,14 @@
 
       if (data.backgroundType === 'video' && data.background) {
         container.innerHTML = `
-          <video class="bg-video" autoplay muted loop playsinline>
+          <video class="bg-video" autoplay muted loop playsinline preload="metadata"
+            poster="${data.background.replace(/\.mp4.*/, '')}/thumb.jpg"
+            aria-hidden="true">
             <source src="${data.background}" type="video/mp4">
           </video>`;
       } else if (data.background) {
         container.innerHTML = `
-          <div class="bg-image" style="background-image: url(${data.background})"></div>`;
+          <div class="bg-image" style="background-image: url(${data.background})" role="img" aria-hidden="true"></div>`;
       } else {
         container.innerHTML = '';
       }
@@ -194,14 +256,15 @@
       // Photographer credit
       const creditEl = document.getElementById('credit');
       if (data.photographer && data.photoUrl) {
-        creditEl.innerHTML = `Video by <a href="${data.photoUrl}" target="_blank" rel="noopener">${data.photographer}</a> on <a href="https://pexels.com" target="_blank">Pexels</a>`;
+        const mediaType = data.backgroundType === 'video' ? 'Video' : 'Photo';
+        creditEl.innerHTML = mediaType + ` by <a href="${data.photoUrl}" target="_blank" rel="noopener">${data.photographer}</a> on <a href="https://pexels.com" target="_blank">Pexels</a>`;
       } else {
         creditEl.innerHTML = '';
       }
 
-      // Audio
+      // Audio pronunciation button
       const audioHtml = data.audioUrl
-        ? `<button class="play-btn" onclick="playAudio('${data.audioUrl}')" aria-label="Play pronunciation">
+        ? `<button class="play-btn" id="play-btn" aria-label="Play pronunciation">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/>
             </svg>
@@ -210,16 +273,36 @@
 
       const box = document.getElementById('word-box');
       box.innerHTML = `
-        <div class="word">${data.word}</div>
-        ${data.phonetic ? `<div class="phonetic">${data.phonetic}</div>` : ''}
-        <div class="definition">${data.definition}</div>
+        <div class="word">${escapeHtml(data.word)}</div>
+        ${data.phonetic ? `<div class="phonetic">${escapeHtml(data.phonetic)}</div>` : ''}
+        <div class="definition">${escapeHtml(data.definition)}</div>
         ${audioHtml}
       `;
+
+      // Attach audio event listener after DOM update
+      if (data.audioUrl) {
+        const btn = document.getElementById('play-btn');
+        if (btn) {
+          btn.addEventListener('click', function playHandler() {
+            playAudio(data.audioUrl);
+          });
+        }
+      }
     }
 
     function playAudio(url) {
       const audio = new Audio(url);
-      audio.play().catch(() => {});
+      audio.play().catch(function() {
+        // Autoplay blocked — user needs to interact first
+      });
+    }
+
+    // Simple escape to prevent XSS from dictionary content
+    function escapeHtml(text) {
+      if (!text) return '';
+      var div = document.createElement('div');
+      div.appendChild(document.createTextNode(text));
+      return div.innerHTML;
     }
 
     fetchWord();
