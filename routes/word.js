@@ -5,8 +5,10 @@ const router = express.Router();
 
 const curatedWords = require(path.join(__dirname, '..', 'words.json'));
 const DICT_API = 'https://api.dictionaryapi.dev/api/v2/entries/en';
-const PEXELS_VIDEO_API = 'https://api.pexels.com/videos/popular';
 const PEXELS_KEY = process.env.PEXELS_API_KEY || 'leDFMC0LbjxAG5mARI5f2X327gcFlgqYYBa6SgyncufkloumrVAZCYFD';
+
+const PEXELS_PHOTO_API = 'https://api.pexels.com/v1/search';
+const PEXELS_VIDEO_API = 'https://api.pexels.com/videos/search';
 
 // Load large word list
 const wordList = fs
@@ -46,36 +48,43 @@ async function fetchFromDictionary(word) {
   return { word, phonetic, definition, example, partOfSpeech, audioUrl };
 }
 
-async function fetchBackgroundVideo() {
-  try {
-    const page = Math.floor(Math.random() * 30) + 1;
-    const url = `${PEXELS_VIDEO_API}?per_page=1&page=${page}&min_width=1920&min_height=1080`;
-    const res = await fetch(url, {
-      headers: { Authorization: PEXELS_KEY },
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const videos = data.videos || [];
-    if (videos.length === 0) return null;
-    const video = videos[0];
+async function fetchPhoto() {
+  const page = Math.floor(Math.random() * 30) + 1;
+  // Nature landscape photos
+  const url = `${PEXELS_PHOTO_API}?query=nature&orientation=landscape&per_page=1&page=${page}`;
+  const res = await fetch(url, { headers: { Authorization: PEXELS_KEY } });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const photo = data.photos?.[0];
+  if (!photo) return null;
+  return {
+    src: photo.src?.original || photo.src?.large2x || null,
+    photographer: photo.photographer || null,
+    url: photo.url || null,
+    type: 'photo',
+  };
+}
 
-    // Pick the highest quality video file (prefer 4k or 2k, fall back to hd)
-    const files = video.video_files || [];
-    // Sort by quality: higher height = better
-    files.sort((a, b) => (b.height || 0) - (a.height || 0));
-    const best = files[0];
-    if (!best || !best.link) return null;
-
-    return {
-      src: best.link,
-      photographer: video.user?.name || null,
-      url: video.url || null,
-      width: best.width,
-      height: best.height,
-    };
-  } catch {
-    return null;
-  }
+async function fetchVideo() {
+  const page = Math.floor(Math.random() * 20) + 1;
+  // Nature landscape videos
+  const url = `${PEXELS_VIDEO_API}?query=nature&orientation=landscape&per_page=1&page=${page}&min_width=1920&min_height=1080`;
+  const res = await fetch(url, { headers: { Authorization: PEXELS_KEY } });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const videos = data.videos || [];
+  if (videos.length === 0) return null;
+  const video = videos[0];
+  const files = video.video_files || [];
+  files.sort((a, b) => (b.height || 0) - (a.height || 0));
+  const best = files[0];
+  if (!best || !best.link) return null;
+  return {
+    src: best.link,
+    photographer: video.user?.name || null,
+    url: video.url || null,
+    type: 'video',
+  };
 }
 
 router.get('/', async (req, res) => {
@@ -88,7 +97,6 @@ router.get('/', async (req, res) => {
   }
 
   if (!result) {
-    // Pick a new random word and look it up
     for (let attempt = 0; attempt < 5; attempt++) {
       const word = pickRandomWord();
       if (cache.has(word)) continue;
@@ -102,14 +110,24 @@ router.get('/', async (req, res) => {
     }
   }
 
-  // Fallback
   if (!result) result = pickRandomCurated();
 
-  // Attach background video from Pexels
-  const bg = await fetchBackgroundVideo();
-  if (bg) {
+  // Randomly pick photo or video (50/50)
+  const useVideo = Math.random() < 0.5;
+  const bg = useVideo ? await fetchVideo() : await fetchPhoto();
+
+  // Fallback to the other type if first attempt failed
+  if (!bg) {
+    const fallback = useVideo ? await fetchPhoto() : await fetchVideo();
+    if (fallback) {
+      result.background = fallback.src;
+      result.backgroundType = fallback.type;
+      result.photographer = fallback.photographer;
+      result.photoUrl = fallback.url;
+    }
+  } else {
     result.background = bg.src;
-    result.backgroundType = 'video';
+    result.backgroundType = bg.type;
     result.photographer = bg.photographer;
     result.photoUrl = bg.url;
   }
