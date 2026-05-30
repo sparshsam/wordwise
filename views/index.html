@@ -66,6 +66,46 @@
       padding: 2px 6px;
       min-width: 0;
       flex: 1 0 auto;
+      position: relative;
+      cursor: default;
+    }
+
+    .tz-tooltip {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      background: rgba(20, 20, 20, 0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      white-space: nowrap;
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.85);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 20;
+      line-height: 1.4;
+      max-width: 320px;
+    }
+
+    .tz-tooltip .tt-label {
+      font-weight: 600;
+      color: #fff;
+      font-size: 0.7rem;
+    }
+
+    .tz-tooltip .tt-fact {
+      color: rgba(255,255,255,0.6);
+      font-weight: 400;
+    }
+
+    .tz-item:hover .tz-tooltip {
+      opacity: 1;
+      transform: translateX(-50%) translateY(6px);
     }
 
     .tz-abbr {
@@ -344,18 +384,18 @@
   <script>
     // ─── TIMEZONE DATA ───
     var TZ_LIST = [
-      { abbr: 'PT',  zone: 'America/Los_Angeles',  label: 'Los Angeles' },
-      { abbr: 'MT',  zone: 'America/Denver',        label: 'Denver' },
-      { abbr: 'CT',  zone: 'America/Chicago',       label: 'Chicago' },
-      { abbr: 'ET',  zone: 'America/New_York',      label: 'New York' },
-      { abbr: 'BRT', zone: 'America/Sao_Paulo',     label: 'São Paulo' },
-      { abbr: 'GMT', zone: 'Europe/London',          label: 'London' },
-      { abbr: 'CET', zone: 'Europe/Berlin',          label: 'Berlin' },
-      { abbr: 'GST', zone: 'Asia/Dubai',             label: 'Dubai' },
-      { abbr: 'PKT', zone: 'Asia/Karachi',           label: 'Karachi' },
-      { abbr: 'IST', zone: 'Asia/Kolkata',           label: 'Mumbai' },
-      { abbr: 'CST', zone: 'Asia/Shanghai',          label: 'Beijing' },
-      { abbr: 'JST', zone: 'Asia/Tokyo',             label: 'Tokyo' },
+      { abbr: 'PT',  zone: 'America/Los_Angeles',  label: 'Los Angeles',  fact: 'Home to Silicon Valley and Hollywood — two industries that run on California time.' },
+      { abbr: 'MT',  zone: 'America/Denver',        label: 'Denver',       fact: 'Denver is the only U.S. city to have hosted the Olympics at a mile above sea level.' },
+      { abbr: 'CT',  zone: 'America/Chicago',       label: 'Chicago',     fact: 'Chicago invented the skyscraper and the brownie — both changed the world.' },
+      { abbr: 'ET',  zone: 'America/New_York',      label: 'New York',    fact: 'The New York Stock Exchange opens at 9:30 AM ET — the busiest trading hour on Earth.' },
+      { abbr: 'BRT', zone: 'America/Sao_Paulo',     label: 'São Paulo',   fact: 'São Paulo is the largest city in the Americas outside North America — 22 million people.' },
+      { abbr: 'GMT', zone: 'Europe/London',          label: 'London',      fact: 'GMT is the world\'s timekeeping zero — all other timezones are measured against it.' },
+      { abbr: 'CET', zone: 'Europe/Berlin',          label: 'Berlin',      fact: 'Berlin spans two timezone offsets yearly — its DST transition affects most of Europe.' },
+      { abbr: 'GST', zone: 'Asia/Dubai',             label: 'Dubai',       fact: 'Dubai runs on UTC+4 year-round — no daylight saving means sunrise times barely shift.' },
+      { abbr: 'PKT', zone: 'Asia/Karachi',           label: 'Karachi',     fact: 'Pakistan is one of the few countries that uses a 30-minute offset (UTC+5:30).' },
+      { abbr: 'IST', zone: 'Asia/Kolkata',           label: 'Mumbai',      fact: 'India uses a single timezone for 1.4 billion people — sunrise varies by 2 hours east to west.' },
+      { abbr: 'CST', zone: 'Asia/Shanghai',          label: 'Beijing',     fact: 'China spans five geographic timezones but uses just one — Beijing time across the whole country.' },
+      { abbr: 'JST', zone: 'Asia/Tokyo',             label: 'Tokyo',       fact: 'Japan\'s timezone hasn\'t changed since 1888 — one of the oldest continuous standards.' },
     ];
 
     // Map IANA zones → abbreviations for opposite lookup
@@ -447,7 +487,9 @@
         html += '<div class="tz-item">' +
           '<span class="tz-abbr">' + t.abbr + '</span>' +
           '<span class="tz-time" data-zone="' + t.zone + '">' + formatTime(t.zone) + '</span>' +
+          '<div class="tz-tooltip"><span class="tt-label">' + t.label + '</span><br><span class="tt-fact">' + t.fact + '</span></div>' +
           '</div>';
+      });
       });
       html += '<div class="tz-date-desk">' + formatDateLong() + '</div>';
       bar.innerHTML = html;
