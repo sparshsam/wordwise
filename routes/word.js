@@ -5,6 +5,8 @@ const router = express.Router();
 
 const curatedWords = require(path.join(__dirname, '..', 'words.json'));
 const DICT_API = 'https://api.dictionaryapi.dev/api/v2/entries/en';
+const PEXELS_API = 'https://api.pexels.com/v1/curated';
+const PEXELS_KEY = process.env.PEXELS_API_KEY || 'leDFMC0LbjxAG5mARI5f2X327gcFlgqYYBa6SgyncufkloumrVAZCYFD';
 
 // Load large word list
 const wordList = fs
@@ -44,32 +46,64 @@ async function fetchFromDictionary(word) {
   return { word, phonetic, definition, example, partOfSpeech, audioUrl };
 }
 
+async function fetchBackground() {
+  try {
+    const page = Math.floor(Math.random() * 50) + 1;
+    const url = `${PEXELS_API}?per_page=1&page=${page}`;
+    const res = await fetch(url, {
+      headers: { Authorization: PEXELS_KEY },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const photos = data.photos || [];
+    if (photos.length === 0) return null;
+    const photo = photos[0];
+    return {
+      src: photo.src?.original || photo.src?.large2x || null,
+      photographer: photo.photographer || null,
+      url: photo.url || null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 router.get('/', async (req, res) => {
+  let result;
+
   // Try to serve a cached word first for speed
   const cached = [...cache.values()];
   if (cached.length > 30 && Math.random() < 0.3) {
-    // 30% chance to serve a cached word (avoids being purely random)
-    return res.json(cached[Math.floor(Math.random() * cached.length)]);
+    result = cached[Math.floor(Math.random() * cached.length)];
   }
 
-  // Pick a new random word and look it up
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const word = pickRandomWord();
-    // Skip if already cached
-    if (cache.has(word)) continue;
-
-    try {
-      const result = await fetchFromDictionary(word);
-      cache.set(word, result);
-      return res.json(result);
-    } catch {
-      // Word not in dictionary, try another
-      continue;
+  if (!result) {
+    // Pick a new random word and look it up
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const word = pickRandomWord();
+      if (cache.has(word)) continue;
+      try {
+        result = await fetchFromDictionary(word);
+        cache.set(word, result);
+        break;
+      } catch {
+        continue;
+      }
     }
   }
 
-  // Fallback: serve a curated word
-  res.json(pickRandomCurated());
+  // Fallback
+  if (!result) result = pickRandomCurated();
+
+  // Attach background image from Pexels
+  const bg = await fetchBackground();
+  if (bg) {
+    result.background = bg.src;
+    result.photographer = bg.photographer;
+    result.photoUrl = bg.url;
+  }
+
+  res.json(result);
 });
 
 module.exports = router;
