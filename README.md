@@ -295,6 +295,10 @@ See [SECURITY.md](SECURITY.md) for the full policy.
 
 ## Roadmap
 
+WordWise should remain tiny, fast, and peaceful. The roadmap expands the daily ritual without turning the app into a social network, learning platform, or account system.
+
+### Completed
+
 - [x] Random word with dictionary definitions
 - [x] Landscape nature photo/video backgrounds
 - [x] Audio pronunciation support
@@ -302,11 +306,69 @@ See [SECURITY.md](SECURITY.md) for the full policy.
 - [x] Mobile opposite-timezone display
 - [x] Date hover with historical facts
 - [x] One-click Vercel deployment
-- [ ] Daily word archive (past words logged and browsable)
-- [ ] Share-once link for a specific word with pinned background
-- [ ] User-chosen overlay opacity
-- [ ] Word frequency filter (common words only mode)
-- [ ] Self-hosted dictionary (remove external API dependency)
+
+### Near-Term
+
+- [ ] **Daily word archive** — browse past generated words with their definitions, media credits, and dates.
+- [ ] **Share-once links** — create a stable link for a specific word/background pairing without accounts.
+- [ ] **Overlay controls** — user-chosen opacity, contrast, and readability settings saved locally.
+- [ ] **Word frequency filter** — common, intermediate, advanced, and rare-word modes.
+- [ ] **Better fallback packs** — larger curated offline set with definitions, examples, and parts of speech.
+- [ ] **Keyboard shortcuts** — refresh word, play audio, copy word, copy definition, and hide/show UI.
+
+### Mid-Term
+
+- [ ] **Self-hosted dictionary mode** — remove dependency on external dictionary calls for fully self-contained deployments.
+- [ ] **Local archive mode** — optionally store viewed words in local storage only, never server-side.
+- [ ] **Theme packs** — forest, ocean, mountain, desert, rain, night sky, and minimal solid-background modes.
+- [ ] **Pronunciation improvements** — clearer audio fallback logic, phonetic formatting, and source attribution.
+- [ ] **Multilingual interface** — translate app chrome while keeping English words as the core content.
+- [ ] **PWA support** — installable daily-word screen with offline fallback words.
+
+### Long-Term Vision
+
+- [ ] **Personal lexicon** — a private, local-first collection of favourite words, copied definitions, and saved media moments.
+- [ ] **Exportable word journal** — export favourite words as JSON, Markdown, or a printable PDF.
+- [ ] **Calm learning mode** — gentle review prompts without streak pressure, points, ads, or dopamine traps.
+- [ ] **Public domain dictionary pack** — ship a durable, inspectable dictionary dataset for long-term self-hosting.
+- [ ] **Embeddable widget** — tiny iframe/script version for personal websites, blogs, dashboards, and digital gardens.
+- [ ] **Open archive format** — portable schema for word, definition, source, media attribution, and timestamp metadata.
+
+### Optional Base / OpenProof Direction
+
+Any Web3 idea should be optional and almost invisible. WordWise is not a wallet app.
+
+Possible proof-oriented features:
+
+- [ ] **Word moment receipts** — locally generate a small receipt for a word/background/date pairing.
+- [ ] **Archive integrity snapshots** — hash a public daily archive and optionally anchor the hash through an OpenProof-style flow.
+- [ ] **Creator attribution proofs** — preserve media attribution metadata in export receipts.
+- [ ] **Personal lexicon verification** — let users prove a saved word journal has not been altered without publishing the journal itself.
+
+What should never happen:
+
+- no token
+- no NFT marketplace
+- no wallet required to use the app
+- no user tracking
+- no account-gated vocabulary
+- no permanent onchain storage of personal journals
+
+Base, if used, should be a quiet verification layer for public archives and exported receipts, not the center of the product.
+
+## Future Philosophy
+
+WordWise is a small ritual app: one word, one landscape, one moment of attention.
+
+Its place in the broader ecosystem is calm daily utility:
+
+- **Curiosity without accounts** — language discovery should not require a profile.
+- **Beauty without tracking** — visual polish does not need analytics or surveillance.
+- **Learning without pressure** — no streak anxiety, no leaderboards, no productivity theatre.
+- **Portability over lock-in** — saved words and archives should be exportable.
+- **Proof where useful** — receipts and hashes can preserve archives without exposing private reading habits.
+
+The ambition is not to become the biggest dictionary app. The ambition is to remain a little window that opens cleanly every day. 🌿
 
 ---
 
