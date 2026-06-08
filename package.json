@@ -1,12 +1,24 @@
 {
   "name": "wordwise",
   "version": "3.0.0",
-  "description": "A minimal word-of-the-day app with dictionary definitions, phonetic pronunciation, and Pexels photo/video backgrounds.",
+  "description": "Reflective word-of-the-day practice with dictionary definitions and optional media backgrounds.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2"
-  }
+  },
+  "private": true,
+  "license": "MIT",
+  "author": "Sparsh Sam",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sparshsam/wordwise.git"
+  },
+  "homepage": "https://github.com/sparshsam/wordwise#readme",
+  "bugs": {
+    "url": "https://github.com/sparshsam/wordwise/issues"
+  },
+  "keywords": []
 }

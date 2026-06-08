@@ -379,3 +379,7 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, cod
 ## License
 
 AGPL-3.0. See [LICENSE](LICENSE) for details.
+
+---
+
+*Last updated: June 2026*
