@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: >-
+  If you use WordWise in research or publications, please cite this
+  repository.
+title: WordWise
+abstract: >-
+  A minimal vocabulary app for learning one word per day. No
+  accounts, no tracking, no notifications — just a word, its
+  definition, an example sentence, and audio pronunciation.
+authors:
+  - family-names: Agarwal
+    given-names: Sparsh
+    orcid: ''
+license: AGPL-3.0-or-later
+repository-code: 'https://github.com/sparshagarwal/wordwise'
+keywords:
+  - vocabulary
+  - language-learning
+  - word-of-the-day
+  - express
+  - nodejs
+type: software
