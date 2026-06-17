@@ -31,6 +31,8 @@
 
 WordWise is a single-page word-of-the-day app that serves a random English word on every visit — with its definition, phonetic pronunciation, a usage example, and a full-screen nature landscape photo or video background. It started as a hardcoded demo and grew into a polished, deployable product.
 
+**Maturity:** Maintained. Releases, changelog, and issue tracking are active. See [ARCHITECTURE.md](docs/architecture.md) for system design.
+
 ---
 
 ## Features
@@ -229,6 +231,8 @@ The `vercel.json` routes all requests to the Express server.
 
 ```
 wordwise/
+├── docs/
+│   └── architecture.md          # System architecture and data flow
 ├── routes/
 │   └── word.js              # Word selection, dictionary lookup, Pexels fetch
 ├── views/
@@ -372,9 +376,24 @@ The ambition is not to become the biggest dictionary app. The ambition is to rem
 
 ---
 
+## Limitations
+
+WordWise is a read-only word display app. It does not:
+
+- Store user history or preferences server-side
+- Provide spaced repetition, quizzes, or learning tools
+- Offer user accounts, authentication, or personalization
+- Support offline word archives (browser-level caching only)
+- Guarantee dictionary availability (depends on Free Dictionary API)
+- Provide medical, legal, or academic definitions
+
 ## Contributing
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, code style, and pull request guidelines.
+
+## Citation
+
+If you use WordWise in research or publications, please cite the repository using the metadata in [CITATION.cff](CITATION.cff).
 
 ## License
 
