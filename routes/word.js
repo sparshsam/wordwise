@@ -8,152 +8,197 @@ const DICT_API = 'https://api.dictionaryapi.dev/api/v2/entries/en';
 const PEXELS_KEY = process.env.PEXELS_API_KEY || 'leDFMC0LbjxAG5mARI5f2X327gcFlgqYYBa6SgyncufkloumrVAZCYFD';
 const PEXELS_PHOTO_API = 'https://api.pexels.com/v1/search';
 const PEXELS_VIDEO_API = 'https://api.pexels.com/videos/search';
-const FETCH_TIMEOUT_MS = 4000;
+const FETCH_TIMEOUT = 4000;
+const DAILY_BATCH_SIZE = 50;
 
+// ─── Word list ───
 const wordList = fs
   .readFileSync(path.join(__dirname, '..', 'words.txt'), 'utf-8')
   .split('\n')
   .filter(Boolean);
 
-// In-memory cache: word → enriched data
-const cache = new Map();
+// ─── Caches ───
+const defCache = new Map();   // word → { word, phonetic, definition, … }
+const mediaCache = new Map(); // word → { src, photographer, url, type }
 
-// Seed cache with curated words so first load is instant
+// Seed definition cache with curated words
 for (const w of curatedWords) {
-  cache.set(w.word, w);
+  defCache.set(w.word, w);
 }
 
-function pickRandomWord() {
-  return wordList[Math.floor(Math.random() * wordList.length)];
+// ─── Seeded PRNG (Mulberry32) ───
+function seededRandom(seed) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = ((h << 5) - h) + seed.charCodeAt(i);
+    h |= 0;
+  }
+  return function () {
+    h |= 0;
+    h = h + 0x6D2B79F5 | 0;
+    let t = Math.imul(h ^ h >>> 15, 1 | h);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
 }
 
-function pickRandomCurated() {
-  return curatedWords[Math.floor(Math.random() * curatedWords.length)];
+// ─── Daily word pool (50 unique words, date-rotated) ───
+let dailyPool = null;
+let dailyPoolDate = '';
+
+function getDailyPool() {
+  const today = new Date().toISOString().slice(0, 10); // "2026-07-03"
+  if (dailyPoolDate !== today) {
+    const rng = seededRandom(today);
+    const pool = [...wordList];
+    // Fisher-Yates shuffle
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    dailyPool = pool.slice(0, DAILY_BATCH_SIZE);
+    dailyPoolDate = today;
+  }
+  return dailyPool;
 }
 
-// Fetch with timeout
-async function fetchWithTimeout(url, opts, ms) {
+// ─── HTTP fetch with timeout ───
+async function fetchJSON(url, opts, ms) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), ms || FETCH_TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), ms || FETCH_TIMEOUT);
   try {
     const res = await fetch(url, { ...opts, signal: ctrl.signal });
-    return res;
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
   } finally {
     clearTimeout(timer);
   }
 }
 
-async function fetchFromDictionary(word) {
-  const res = await fetchWithTimeout(`${DICT_API}/${encodeURIComponent(word)}`);
-  if (!res.ok) throw new Error('Not found');
-  const data = await res.json();
+// ─── Dictionary API lookup (cached) ───
+async function getDefinition(word) {
+  if (defCache.has(word)) return defCache.get(word);
+  const data = await fetchJSON(`${DICT_API}/${encodeURIComponent(word)}`);
+  if (!data || !Array.isArray(data)) return null;
   const entry = data[0];
+  if (!entry) return null;
   const phonetic = entry.phonetic || entry.phonetics?.find(p => p.text)?.text || '';
   const audioUrl = entry.phonetics?.find(p => p.audio)?.audio || null;
   const meaning = entry.meanings?.[0];
-  const definition = meaning?.definitions?.[0]?.definition || '';
-  const example = meaning?.definitions?.[0]?.example || '';
-  const partOfSpeech = meaning?.partOfSpeech || '';
-  return { word, phonetic, definition, example, partOfSpeech, audioUrl };
+  const result = {
+    word,
+    phonetic,
+    definition: meaning?.definitions?.[0]?.definition || '',
+    example: meaning?.definitions?.[0]?.example || '',
+    partOfSpeech: meaning?.partOfSpeech || '',
+    audioUrl,
+  };
+  defCache.set(word, result);
+  return result;
 }
 
-async function tryFetchBackground() {
-  try {
-    const useVideo = Math.random() < 0.5;
-    const page = Math.floor(Math.random() * 30) + 1;
-    let src, photographer, url, type;
+// ─── Single Pexels media fetch ───
+async function fetchSingleMedia() {
+  const useVideo = Math.random() < 0.5;
+  const page = Math.floor(Math.random() * 30) + 1;
 
-    if (useVideo) {
-      const apiUrl = `${PEXELS_VIDEO_API}?query=nature&orientation=landscape&per_page=1&page=${page}&min_width=1920&min_height=1080`;
-      const res = await fetchWithTimeout(apiUrl, { headers: { Authorization: PEXELS_KEY } }, 3000);
-      if (res.ok) {
-        const data = await res.json();
-        const video = data.videos?.[0];
-        if (video) {
-          const files = (video.video_files || []).sort((a, b) => (b.height || 0) - (a.height || 0));
-          const best = files[0];
-          if (best?.link) {
-            src = best.link;
-            photographer = video.user?.name || null;
-            url = video.url || null;
-            type = 'video';
-          }
-        }
-      }
-      // If video failed, try photo
-      if (!src) {
-        const photoUrl = `${PEXELS_PHOTO_API}?query=nature&orientation=landscape&per_page=1&page=${page}`;
-        const pRes = await fetchWithTimeout(photoUrl, { headers: { Authorization: PEXELS_KEY } }, 3000);
-        if (pRes.ok) {
-          const pData = await pRes.json();
-          const photo = pData.photos?.[0];
-          if (photo) {
-            src = photo.src?.original || photo.src?.large2x || null;
-            photographer = photo.photographer || null;
-            url = photo.url || null;
-            type = 'photo';
-          }
-        }
-      }
-    } else {
-      const photoUrl = `${PEXELS_PHOTO_API}?query=nature&orientation=landscape&per_page=1&page=${page}`;
-      const res = await fetchWithTimeout(photoUrl, { headers: { Authorization: PEXELS_KEY } }, 3000);
-      if (res.ok) {
-        const data = await res.json();
-        const photo = data.photos?.[0];
-        if (photo) {
-          src = photo.src?.original || photo.src?.large2x || null;
-          photographer = photo.photographer || null;
-          url = photo.url || null;
-          type = 'photo';
-        }
+  if (useVideo) {
+    const data = await fetchJSON(
+      `${PEXELS_VIDEO_API}?query=nature&orientation=landscape&per_page=1&page=${page}&min_width=1920&min_height=1080`,
+      { headers: { Authorization: PEXELS_KEY } },
+      3000
+    );
+    if (data?.videos?.[0]) {
+      const v = data.videos[0];
+      const files = (v.video_files || []).sort((a, b) => (b.height || 0) - (a.height || 0));
+      if (files[0]?.link) {
+        return { src: files[0].link, photographer: v.user?.name || null, url: v.url || null, type: 'video' };
       }
     }
+  }
 
-    if (src) return { src, photographer, url, type };
-  } catch {}
+  // Photo (or video fallback)
+  const data = await fetchJSON(
+    `${PEXELS_PHOTO_API}?query=nature&orientation=landscape&per_page=1&page=${page}`,
+    { headers: { Authorization: PEXELS_KEY } },
+    3000
+  );
+  if (data?.photos?.[0]) {
+    const p = data.photos[0];
+    return { src: p.src?.original || p.src?.large2x || null, photographer: p.photographer || null, url: p.url || null, type: 'photo' };
+  }
   return null;
 }
 
+// ─── Background batch media pre-fetch ───
+let mediaGenerationPromise = null;
+
+async function preFetchBatchMedia() {
+  const pool = getDailyPool();
+  for (const word of pool) {
+    if (mediaCache.has(word)) continue;
+    try {
+      const media = await fetchSingleMedia();
+      if (media) mediaCache.set(word, media);
+    } catch { /* skip failed fetches */ }
+  }
+}
+
+function startBackgroundPreFetch() {
+  if (!mediaGenerationPromise) {
+    mediaGenerationPromise = preFetchBatchMedia().finally(() => {
+      mediaGenerationPromise = null;
+    });
+  }
+}
+
+// ─── GET /api/word?s=N ───
 router.get('/', async (req, res) => {
-  let result;
+  const pool = getDailyPool();
 
-  // Serve a cached word ASAP — curated words are always pre-cached
-  const cached = [...cache.values()];
-  if (cached.length > 30) {
-    // 50% chance to serve cached instantly (no external API calls)
-    if (Math.random() < 0.5) {
-      result = cached[Math.floor(Math.random() * cached.length)];
-    }
-  }
+  // Read slot from query param (client stores in localStorage)
+  let slot = parseInt(req.query.slot, 10);
+  if (isNaN(slot) || slot < 0 || slot >= DAILY_BATCH_SIZE) slot = 0;
 
+  const wordName = pool[slot];
+  const nextSlot = (slot + 1) % DAILY_BATCH_SIZE;
+
+  // Resolve definition (cached → Dictionary API → random curated fallback)
+  let result = await getDefinition(wordName);
   if (!result) {
-    // Try up to 3 times to get a NEW word from dictionary (with timeout)
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const word = pickRandomWord();
-      if (cache.has(word)) continue;
-      try {
-        result = await fetchFromDictionary(word);
-        cache.set(word, result);
-        break;
-      } catch {
-        continue;
+    // Quick fallback: show the word with just a placeholder definition
+    const fb = curatedWords[Math.floor(Math.random() * curatedWords.length)];
+    result = { word: wordName, definition: fb.definition, phonetic: '', example: '', partOfSpeech: '', audioUrl: null };
+  }
+
+  // Attach pre-fetched media if available
+  const media = mediaCache.get(wordName);
+  if (media) {
+    result.background = media.src;
+    result.backgroundType = media.type;
+    result.photographer = media.photographer;
+    result.photoUrl = media.url;
+  } else {
+    // No cached media yet — try a quick synchronous fetch
+    try {
+      const live = await fetchSingleMedia();
+      if (live) {
+        mediaCache.set(wordName, live);
+        result.background = live.src;
+        result.backgroundType = live.type;
+        result.photographer = live.photographer;
+        result.photoUrl = live.url;
       }
-    }
+    } catch { /* render without media */ }
   }
 
-  // If everything failed, just use a curated word — instant
-  if (!result) result = pickRandomCurated();
+  // Fire background pre-fetch for rest of batch (non-blocking)
+  startBackgroundPreFetch();
 
-  // Fire background fetch in parallel but don't wait long
-  const bg = await tryFetchBackground();
-  if (bg) {
-    result.background = bg.src;
-    result.backgroundType = bg.type;
-    result.photographer = bg.photographer;
-    result.photoUrl = bg.url;
-  }
-
+  // Return word data + nextSlot so client can store it
+  result.nextSlot = nextSlot;
   res.json(result);
 });
 

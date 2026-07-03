@@ -10,16 +10,16 @@
 
   <!-- Open Graph / Social Sharing -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://wordwisehiccups.vercel.app">
+  <meta property="og:url" content="https://wordwise.kovina.org">
   <meta property="og:title" content="WordWise">
   <meta property="og:description" content="A new word every visit — with definition, pronunciation, and a beautiful background.">
-  <meta property="og:image" content="https://wordwisehiccups.vercel.app/og-image.png">
+  <meta property="og:image" content="https://wordwise.kovina.org/og-image.png">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="720">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="WordWise">
   <meta name="twitter:description" content="A new word every visit — with definition, pronunciation, and a beautiful background.">
-  <meta name="twitter:image" content="https://wordwisehiccups.vercel.app/og-image.png">
+  <meta name="twitter:image" content="https://wordwise.kovina.org/og-image.png">
 
   <title>WordWise</title>
   <style>
@@ -620,33 +620,32 @@
       // Nothing extra needed
     }
 
-    // ─── WORD FETCH ───
-    // Show a curated word as instant fallback if API is slow
-    var CURATED_FALLBACK = [
-      { word: 'serendipity', phonetic: '/ˌsɛrənˈdɪpɪti/', definition: 'the occurrence of events by chance in a happy way' },
-      { word: 'ephemeral', phonetic: '/ɪˈfɛm(ə)rəl/', definition: 'lasting for a very short time' },
-      { word: 'halcyon', phonetic: '/ˈhælsiən/', definition: 'denoting a period of time that is happy and peaceful' },
-      { word: 'petrichor', phonetic: '/ˈpɛtrɪkɔː/', definition: 'the pleasant smell that accompanies rain on dry ground' },
-      { word: 'luminous', phonetic: '/ˈluːmɪnəs/', definition: 'full of or shedding light; bright' },
-    ];
-    var fallbackTimer = setTimeout(function() {
-      // If API hasn't responded yet, show a fallback word immediately
-      var fb = CURATED_FALLBACK[Math.floor(Math.random() * CURATED_FALLBACK.length)];
-      renderWord(fb);
-    }, 4000);
+    // ─── WORD FETCH (daily batch, slot-tracked) ───
+    // Read current slot from localStorage (resets to 0 for new day)
+    function getSlot() {
+      var raw = localStorage.getItem('wordwise_slot');
+      var day = localStorage.getItem('wordwise_day');
+      var today = new Date().toISOString().slice(0, 10);
+      if (day !== today) return 0;
+      var n = parseInt(raw, 10);
+      return (isNaN(n) || n < 0) ? 0 : n;
+    }
+
+    function setSlot(nextSlot) {
+      localStorage.setItem('wordwise_slot', String(nextSlot));
+      localStorage.setItem('wordwise_day', new Date().toISOString().slice(0, 10));
+    }
 
     async function fetchWord() {
+      var slot = getSlot();
       try {
-        var ctrl = new AbortController();
-        var timeout = setTimeout(function() { ctrl.abort(); }, 8000);
-        var res = await fetch('/api/word', { signal: ctrl.signal });
-        clearTimeout(timeout);
+        var res = await fetch('/api/word?slot=' + slot);
         var data = await res.json();
-        clearTimeout(fallbackTimer);
+        if (data.nextSlot !== undefined) {
+          setSlot(data.nextSlot);
+        }
         renderWord(data);
       } catch(e) {
-        clearTimeout(fallbackTimer);
-        // If nothing rendered yet, show dash
         var box = document.getElementById('word-box');
         if (box && box.querySelector('.loading')) {
           box.innerHTML = '<div class="word" style="font-size:2rem">—</div>';
