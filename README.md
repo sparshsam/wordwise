@@ -1,8 +1,14 @@
-<div align="center">
-  <picture><source media="(prefers-color-scheme: dark)" srcset="assets/branding/icon.svg"><img src="assets/branding/icon.svg" width="96" height="96" alt="WordWise"></picture>
-  <h1>WordWise</h1>
-  <p><strong>A word every visit, rendered huge over a full-screen background.</strong><br />Built for curiosity, aesthetics, and zero friction.</p>
-</div>
+<p align="center">
+  <img src="assets/branding/icon.png" alt="WordWise" width="72">
+</p>
+
+<h1 align="center" style="font-size: 2.75rem; font-weight: 700; letter-spacing: -0.02em; margin: 0.5rem 0 0.25rem;">
+  WordWise
+</h1>
+
+<p align="center" style="font-size: 1.2rem; color: #666; margin: 0 0 0.5rem;">
+  A word every visit, rendered huge over a full-screen background. Built for curiosity, aesthetics, and zero friction.
+</p>
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-wordwisehiccups.vercel.app-339933?style=for-the-badge&logo=vercel)](https://wordwisehiccups.vercel.app)
 [![License: AGPL-3.0](https://img.shields.io/github/license/sparshsam/wordwise?style=for-the-badge&color=blue)](LICENSE)
@@ -10,6 +16,7 @@
 
 <p align="center">
   <img src="assets/hero/hero.png" alt="WordWise hero screenshot" width="720">
+
 </p>
 
 ## Why WordWise
