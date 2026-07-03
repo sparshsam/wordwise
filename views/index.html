@@ -339,6 +339,19 @@
       white-space: nowrap;
     }
 
+    .kovina {
+      position: fixed;
+      bottom: max(1.5rem, env(safe-area-inset-bottom, 1rem));
+      left: max(1rem, env(safe-area-inset-left, 1rem));
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.2);
+      z-index: 2;
+      text-decoration: none;
+      transition: color 0.2s;
+      pointer-events: auto;
+    }
+    .kovina:hover { color: rgba(255,255,255,0.6); }
+
     .credit {
       position: fixed;
       bottom: max(1.5rem, env(safe-area-inset-bottom, 1rem));
@@ -400,6 +413,7 @@
   </div>
   <div class="footer">WordWise</div>
   <div class="credit" id="credit"></div>
+  <a class="kovina" href="https://kovina.org" target="_blank" rel="noopener">Kovina →</a>
 
   <script>
     // ─── TIMEZONE DATA ───
