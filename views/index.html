@@ -343,14 +343,9 @@
       position: fixed;
       bottom: max(1.5rem, env(safe-area-inset-bottom, 1rem));
       left: max(1rem, env(safe-area-inset-left, 1rem));
-      font-size: 0.65rem;
-      color: rgba(255,255,255,0.2);
       z-index: 2;
-      text-decoration: none;
-      transition: color 0.2s;
-      pointer-events: auto;
+      line-height: 0;
     }
-    .kovina:hover { color: rgba(255,255,255,0.6); }
 
     .credit {
       position: fixed;
@@ -413,7 +408,7 @@
   </div>
   <div class="footer">WordWise</div>
   <div class="credit" id="credit"></div>
-  <a class="kovina" href="https://kovina.org" target="_blank" rel="noopener">Kovina →</a>
+  <a class="kovina" href="https://kovina.org" target="_blank" rel="noopener"><img src="assets/branding/kovina-wordmark.svg" alt="Kovina" style="height:24px;display:block;opacity:0.4;transition:opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=0.4"></a>
 
   <script>
     // ─── TIMEZONE DATA ───
