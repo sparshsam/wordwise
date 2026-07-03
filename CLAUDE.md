@@ -54,6 +54,27 @@ Response: `{ word, phonetic, definition, example, partOfSpeech, audioUrl, backgr
 
 `main` requires 1 approving review, dismisses stale reviews, enforces for admins. No force pushes or deletions.
 
+## 2026-07-03 — Icon Generation & Branding Session
+
+### Icon Assets (115 total from `wordwise_light_mode.png`)
+- **Windows**: Multi-size ICO (16×16–256×256)
+- **MSIX Store**: 11 asset types × 5 scales (50px–800px)
+- **Android**: mipmap-hdpi through xxxhdpi + adaptive icons
+- **iOS**: App icon set (20pt–1024pt)
+- **macOS**: `.iconset` (16×16–512×512@2x)
+- **Web**: favicon.ico + favicon-16×16 + favicon-32×32 + apple-touch-icon
+- **PWA**: 192×192 + 512×512 manifest icons
+- **Social**: OG image (1200×630) + GitHub avatars + header icon
+
+### Branding
+- README header: app icon (72px centered) from `assets/branding/icon.png`
+- Kovina wordmark logo added to footer (bottom-left, hyperlinked to kovina.org)
+
+### Favicon Migration (SVG -> PNG)
+- Removed `favicon.svg`, replaced with real PNG favicons generated from master source
+- Enforced PNG favicon references in `views/index.html` and `views/archive.html`
+- OG image regenerated at 1200×630
+
 ## Environment variables
 
 | Variable | Source | Purpose |

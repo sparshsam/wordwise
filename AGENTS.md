@@ -35,6 +35,23 @@ vercel --prod --scope sparsh-sams-projects
 
 Vercel project is linked — just run from repo root. Auto-deploys on push to `main`.
 
+## 2026-07-03 — Icon Generation & Branding Session
+
+### Icon Assets
+- 115 assets generated from `wordwise_light_mode.png` via Lanczos resampling
+- Formats: Windows ICO, MSIX (11 types × 5 scales), Android mipmap, iOS `.iconset`, macOS `.icns`, Web favicons, PWA manifest icons, OG image, GitHub avatars
+- Master source: `assets/branding/wordwise_light_mode.png`
+- Generated output in: `assets/branding/` (favicons + iconset), `assets/msix/`, `assets/android/`, `assets/ios/`, `public/` (favicon.ico)
+
+### Branding Updates
+- README header: app icon via `<img>` at 72px, centered, from `assets/branding/icon.png`
+- Footer: Kovina wordmark logo (bottom-left, linked to https://kovina.org)
+
+### Favicon Fix
+- Removed `favicon.svg` — no longer supported by modern browsers reliably
+- Generated: `favicon.ico` (multi-size), `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png`
+- Updated `views/index.html` and `views/archive.html`: link tags for PNG favicons, OG meta tags with regenerated 1200×630 image
+
 ## Domains & DNS
 
 - **App**: wordwise.kovina.org
